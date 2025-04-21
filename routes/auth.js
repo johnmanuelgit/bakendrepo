@@ -45,4 +45,21 @@ router.post('/login', async (req, res) => {
   });
 });
 
+//profiile
+router.get('/profile',async(req,res)=>{
+  const token =req.header.authorization?.split('')[1];
+  if(!token)return res.status(401).json({message:'no token provide'});
+
+  try {
+    const decoded = jwt.verify(token, 'your_jwt_secret');
+    const user = await User.findById(decoded.id); 
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json(user);
+  } catch (err) {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+})
+
 module.exports = router;
