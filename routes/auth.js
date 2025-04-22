@@ -41,28 +41,17 @@ router.post('/login', async (req, res) => {
   res.send({
     message: "Welcome back, already registered user!",
     token,
-    user: { name: user.name, email: user.email }
+    user: { _id: user._id,name: user.name, email: user.email }
   });
 });
 
-// profile
-router.get('/profile/:id', async (req, res) => {
-  try {
-    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: 'Invalid user ID format' });
-    }
-    
+router.get('/profile/:id',async (req,res)=>{
+  try{
     const user = await User.findById(req.params.id).select('-password');
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
     res.json(user);
   }
-  catch (err) {
-    console.error('Error fetching user profile:', err);
-    res.status(500).json({ message: 'Error fetching user data', error: err.message });
+  catch (err){
+    res.status(500).json({message:'error fetching user'});
   }
 });
 module.exports = router;
