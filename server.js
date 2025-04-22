@@ -17,6 +17,8 @@ connectDB();
 app.get('/', (req, res) => res.send("Server is working!"));
 app.use('/', require('./routes/auth'));
 
+const userRoute = require('./routes/auth');
+app.use('/api/user', userRoute);
 
 
 
