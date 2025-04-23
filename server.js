@@ -10,6 +10,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+
 // DB connect
 connectDB();
 
@@ -19,6 +20,10 @@ app.use('/', require('./routes/auth'));
 
 const userRoute = require('./routes/auth');
 app.use('/api/user', userRoute);
+
+const cartRoute = require('./routes/auth');
+app.use('/api/cart', cartRoute);
+
 
 
 
