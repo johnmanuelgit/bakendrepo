@@ -7,16 +7,27 @@ router.post('/', async (req, res) => {
   const { userId, name, image, price, quantity } = req.body;
 
   try {
-    const existingItem = await Carts.findOne({ userId, name });
-    if (existingItem) {
-      existingItem.quantity += quantity;
-      await existingItem.save();
-      return res.status(200).json({ message: 'Item updated in cart.' });
+    let cart = await Carts.findOne({ userId });
+
+    if (!cart) {
+      // Create a new cart
+      cart = new Carts({
+        userId,
+        items: [{ name, image, price, quantity }]
+      });
+    } else {
+      // Check if item already exists in items array
+      const existingItem = cart.items.find(item => item.name === name);
+
+      if (existingItem) {
+        existingItem.quantity += quantity;
+      } else {
+        cart.items.push({ name, image, price, quantity });
+      }
     }
 
-    const newItem = new Carts({ userId, name, image, price, quantity });
-    await newItem.save();
-    res.status(201).json({ message: 'Item added to cart.' });
+    await cart.save();
+    res.status(200).json({ message: 'Item added/updated in cart.' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to save item to cart.' });
@@ -28,8 +39,12 @@ router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const cartItems = await Carts.find({ userId });
-    res.status(200).json(cartItems);
+    const cart = await Carts.findOne({ userId });
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found.' });
+    }
+
+    res.status(200).json(cart.items);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch cart items.' });
