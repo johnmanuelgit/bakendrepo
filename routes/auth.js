@@ -58,7 +58,7 @@ router.get('/profile/:id', async (req, res) => {
 });
 
 //  Add to Cart
-router.post('/cart', async (req, res) => {
+router.post('/', async (req, res) => {
   const { userId, name, image, price, quantity } = req.body;
 
   try {
@@ -79,7 +79,7 @@ router.post('/cart', async (req, res) => {
 });
 
 //  Get Cart Items by userId
-router.get('/cart/:userId', async (req, res) => {
+router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
 
   try {
