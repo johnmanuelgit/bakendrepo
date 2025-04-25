@@ -52,14 +52,14 @@ router.get('/:userId', async (req, res) => {
 });
 
 // PUT /cart/:productId
-router.put('/:userId', async (req, res) => {
-  const { itemId } = req.params;
-  const { userId, quantity } = req.body;
+router.put('/:userId/:itemId', async (req, res) => {
+  const { userId, itemId } = req.params;
+  const { quantity } = req.body;
 
   try {
     const updatedCart = await Carts.findOneAndUpdate(
-      { userId, 'items._id': itemId }, // match by item's _id
-      { $set: { 'items.$.quantity': quantity } }, // update quantity
+      { userId, 'items._id': itemId },
+      { $set: { 'items.$.quantity': quantity } },
       { new: true }
     );
 
