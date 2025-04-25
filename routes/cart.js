@@ -41,7 +41,7 @@ router.get('/:userId', async (req, res) => {
   try {
     const cart = await Carts.findOne({ userId });
     if (!cart) {
-      return res.status(404).json({ message: 'Cart not found.' });
+      return res.status(200).json([]); // Return empty array instead of 404
     }
 
     res.status(200).json(cart.items);
@@ -51,7 +51,30 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
-// Add this to your cart routes file
+// Update item quantity by ID
+router.put('/:userId/:itemId', async (req, res) => {
+  const { userId, itemId } = req.params;
+  const { quantity } = req.body;
+
+  try {
+    const updatedCart = await Carts.findOneAndUpdate(
+      { userId, 'items._id': itemId },
+      { $set: { 'items.$.quantity': quantity } },
+      { new: true }
+    );
+
+    if (!updatedCart) {
+      return res.status(404).json({ message: 'Item not found in cart.' });
+    }
+
+    res.status(200).json({ message: 'Cart updated', cart: updatedCart });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error updating cart quantity' });
+  }
+});
+
+// Update item quantity by product name
 router.put('/:userId/updateByName', async (req, res) => {
   const { userId } = req.params;
   const { productName, quantity } = req.body;
@@ -74,7 +97,7 @@ router.put('/:userId/updateByName', async (req, res) => {
   }
 });
 
-// Also add a delete route to clear cart
+// Clear cart (remove all items)
 router.delete('/:userId', async (req, res) => {
   const { userId } = req.params;
   
@@ -89,6 +112,28 @@ router.delete('/:userId', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error clearing cart' });
+  }
+});
+
+// Remove specific item from cart
+router.delete('/:userId/item/:itemName', async (req, res) => {
+  const { userId, itemName } = req.params;
+  
+  try {
+    const updatedCart = await Carts.findOneAndUpdate(
+      { userId },
+      { $pull: { items: { name: itemName } } },
+      { new: true }
+    );
+
+    if (!updatedCart) {
+      return res.status(404).json({ message: 'Cart not found.' });
+    }
+
+    res.status(200).json({ message: 'Item removed from cart', cart: updatedCart });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error removing item from cart' });
   }
 });
 

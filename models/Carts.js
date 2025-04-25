@@ -1,10 +1,23 @@
 const mongoose = require('mongoose');
 
 const cartItemSchema = new mongoose.Schema({
-  name: String,
-  image: String,
-  price: Number,
-  quantity: Number
+  name: {
+    type: String,
+    required: true
+  },
+  image: {
+    type: String,
+    required: true
+  },
+  price: {
+    type: Number,
+    required: true
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    default: 1
+  }
 });
 
 const cartSchema = new mongoose.Schema({
@@ -13,7 +26,21 @@ const cartSchema = new mongoose.Schema({
     required: true,
     ref: 'User'
   },
-  items: [cartItemSchema]  // This line was missing - it adds the array of cart items
+  items: [cartItemSchema],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// Update the updatedAt field before each save
+cartSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
 });
 
 module.exports = mongoose.model('Cart', cartSchema);
