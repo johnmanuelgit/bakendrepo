@@ -52,7 +52,7 @@ router.get('/:userId', async (req, res) => {
 });
 
 // PUT /cart/:productId
-router.put('/cart/:itemId', async (req, res) => {
+router.put('/:itemId', async (req, res) => {
   const { itemId } = req.params;
   const { userId, quantity } = req.body;
 
