@@ -1,9 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const Carts = require('../models/Carts');
-const cors = require('cors');
-app.use(cors());
-
 
 // Add to Cart
 router.post('/', async (req, res) => {
