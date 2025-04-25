@@ -52,22 +52,28 @@ router.get('/:userId', async (req, res) => {
 });
 
 // PUT /cart/:productId
-router.put('/cart/:productId', async (req, res) => {
-  const { productId } = req.params;
+router.put('/cart/:itemId', async (req, res) => {
+  const { itemId } = req.params;
   const { userId, quantity } = req.body;
 
   try {
-    const updatedCart = await Cart.findOneAndUpdate(
-      { userId, 'items.productId': productId },
-      { $set: { 'items.$.quantity': quantity } },
+    const updatedCart = await Carts.findOneAndUpdate(
+      { userId, 'items._id': itemId }, // match by item's _id
+      { $set: { 'items.$.quantity': quantity } }, // update quantity
       { new: true }
     );
 
-    res.json(updatedCart);
+    if (!updatedCart) {
+      return res.status(404).json({ message: 'Item not found in cart.' });
+    }
+
+    res.status(200).json({ message: 'Cart updated', cart: updatedCart });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Error updating cart quantity' });
   }
 });
+
 
 
 module.exports = router;
