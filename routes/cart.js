@@ -51,14 +51,14 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
-// PUT /cart/:productId
-router.put('/:userId/:itemId', async (req, res) => {
-  const { userId, itemId } = req.params;
-  const { quantity } = req.body;
+// Add this to your cart routes file
+router.put('/:userId/updateByName', async (req, res) => {
+  const { userId } = req.params;
+  const { productName, quantity } = req.body;
 
   try {
     const updatedCart = await Carts.findOneAndUpdate(
-      { userId, 'items._id': itemId },
+      { userId, 'items.name': productName },
       { $set: { 'items.$.quantity': quantity } },
       { new: true }
     );
@@ -74,6 +74,22 @@ router.put('/:userId/:itemId', async (req, res) => {
   }
 });
 
-
+// Also add a delete route to clear cart
+router.delete('/:userId', async (req, res) => {
+  const { userId } = req.params;
+  
+  try {
+    await Carts.findOneAndUpdate(
+      { userId },
+      { $set: { items: [] } },
+      { new: true }
+    );
+    
+    res.status(200).json({ message: 'Cart cleared successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error clearing cart' });
+  }
+});
 
 module.exports = router;
