@@ -3,11 +3,14 @@ const router = express.Router();
 const Carts = require('../models/Carts');
 
 // Add to Cart
+// In your cart routes
 router.post('/', async (req, res) => {
+  console.log('Add to cart request received:', req.body);
   const { userId, name, image, price, quantity } = req.body;
 
   try {
     let cart = await Carts.findOne({ userId });
+    console.log('Found cart:', cart);
 
     if (!cart) {
       // Create a new cart
@@ -15,25 +18,29 @@ router.post('/', async (req, res) => {
         userId,
         items: [{ name, image, price, quantity }]
       });
+      console.log('Creating new cart');
     } else {
       // Check if item already exists in items array
       const existingItem = cart.items.find(item => item.name === name);
+      console.log('Existing item:', existingItem);
 
       if (existingItem) {
         existingItem.quantity += quantity;
+        console.log('Updating existing item quantity to:', existingItem.quantity);
       } else {
         cart.items.push({ name, image, price, quantity });
+        console.log('Adding new item to cart');
       }
     }
 
     await cart.save();
+    console.log('Cart saved successfully');
     res.status(200).json({ message: 'Item added/updated in cart.' });
   } catch (err) {
-    console.error(err);
+    console.error('Error in add to cart:', err);
     res.status(500).json({ error: 'Failed to save item to cart.' });
   }
 });
-
 // Get Cart Items by userId
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
@@ -136,5 +143,28 @@ router.delete('/:userId/item/:itemName', async (req, res) => {
     res.status(500).json({ message: 'Error removing item from cart' });
   }
 });
+
+// Remove specific item from cart by item name
+router.delete('/:userId/item/:itemName', async (req, res) => {
+  const { userId, itemName } = req.params;
+
+  try {
+    const updatedCart = await Carts.findOneAndUpdate(
+      { userId },
+      { $pull: { items: { name: itemName } } },
+      { new: true }
+    );
+
+    if (!updatedCart) {
+      return res.status(404).json({ message: 'Cart not found.' });
+    }
+
+    res.status(200).json({ message: 'Item removed from cart', cart: updatedCart });
+  } catch (error) {
+    console.error('Error removing item from cart:', error);
+    res.status(500).json({ message: 'Error removing item from cart' });
+  }
+});
+
 
 module.exports = router;
