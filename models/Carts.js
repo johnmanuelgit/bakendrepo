@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const cartItemSchema = new mongoose.Schema({
+  
   name: {
     type: String,
     required: true
@@ -26,15 +27,7 @@ const cartSchema = new mongoose.Schema({
     required: true,
     ref: 'User'
   },
-  items: [cartItemSchema],
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
+  items: [cartItemSchema]
 });
 
 // Update the updatedAt field before each save

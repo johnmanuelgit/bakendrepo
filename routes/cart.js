@@ -6,6 +6,7 @@ const Carts = require('../models/Carts');
 router.post('/', async (req, res) => {
   const { userId, name, image, price, quantity } = req.body;
 
+
   try {
     // Find the cart
     const cart = await Carts.findOne({ userId });
@@ -14,7 +15,7 @@ router.post('/', async (req, res) => {
       // Create a new cart if not found
       const newCart = new Carts({
         userId,
-        items: [{ name, image, price, quantity }]
+        items: [name, image, price, quantity]
       });
       await newCart.save();
       return res.status(200).json({ message: 'Item added to cart.' });
