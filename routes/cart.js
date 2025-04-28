@@ -7,25 +7,31 @@ router.post('/', async (req, res) => {
   const { userId, name, image, price, quantity } = req.body;
 
   try {
-    let cart = await Carts.findOne({ userId });
+    // Find the cart
+    const cart = await Carts.findOne({ userId });
 
     if (!cart) {
-      // Create a new cart
-      cart = new Carts({
+      // Create a new cart if not found
+      const newCart = new Carts({
         userId,
         items: [{ name, image, price, quantity }]
       });
-    } else {
-      // Check if item already exists in items array
-      const existingItem = cart.items.find(item => item.name === name);
-
-      if (existingItem) {
-        existingItem.quantity += quantity;
-      } else {
-        cart.items.push({ name, image, price, quantity });
-      }
+      await newCart.save();
+      return res.status(200).json({ message: 'Item added to cart.' });
     }
 
+    // Check if the item already exists
+    const existingItem = cart.items.find(item => item.name === name);
+
+    if (existingItem) {
+      // If item exists, update its quantity
+      existingItem.quantity += quantity;
+    } else {
+      // If item does not exist, add it to the cart
+      cart.items.push({ name, image, price, quantity });
+    }
+
+    // Save the updated cart
     await cart.save();
     res.status(200).json({ message: 'Item added/updated in cart.' });
   } catch (err) {
@@ -33,6 +39,7 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Failed to save item to cart.' });
   }
 });
+
 
 // Get Cart Items by userId
 router.get('/:userId', async (req, res) => {
