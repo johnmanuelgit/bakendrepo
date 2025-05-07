@@ -61,7 +61,7 @@ router.put('/:itemId', authenticateToken, async (req, res) => {
 
   try {
     const updatedCart = await Carts.findOneAndUpdate(
-      { userId, 'items._id': itemId },
+      { userId, 'items._id': new mongoose.Types.ObjectId(itemId) },
       { $set: { 'items.$.quantity': quantity } },
       { new: true }
     );
