@@ -1,38 +1,33 @@
 const express = require('express');
 const router = express.Router();
 const Carts = require('../models/Carts');
+const authenticateToken = require('../middleware/auth');
 
-// Add to Cart
-router.post('/', async (req, res) => {
-
-  const { userId, name, image, price, quantity } = req.body;
+// Add to Cart (Protected)
+router.post('/', authenticateToken, async (req, res) => {
+  const { name, image, price, quantity } = req.body;
+  const userId = req.user.userId;
 
   try {
-    // Find the cart
     const cart = await Carts.findOne({ userId });
 
     if (!cart) {
-      // Create a new cart if not found
       const newCart = new Carts({
         userId,
-        items: [{name, image, price, quantity}]
+        items: [{ name, image, price, quantity }]
       });
       await newCart.save();
       return res.status(200).json({ message: 'Item added to cart.' });
     }
 
-    // Check if the item already exists
     const existingItem = cart.items.find(item => item.name === name);
 
     if (existingItem) {
-      // If item exists, update its quantity
       existingItem.quantity += quantity;
     } else {
-      // If item does not exist, add it to the cart
       cart.items.push({ name, image, price, quantity });
     }
 
-    // Save the updated cart
     await cart.save();
     res.status(200).json({ message: 'Item added/updated in cart.' });
   } catch (err) {
@@ -41,15 +36,14 @@ router.post('/', async (req, res) => {
   }
 });
 
-
-// Get Cart Items by userId
-router.get('/:userId', async (req, res) => {
-  const { userId } = req.params;
+// Get Cart Items (Protected)
+router.get('/', authenticateToken, async (req, res) => {
+  const userId = req.user.userId;
 
   try {
     const cart = await Carts.findOne({ userId });
     if (!cart) {
-      return res.status(200).json([]); // Return empty array instead of 404
+      return res.status(200).json([]);
     }
 
     res.status(200).json(cart.items);
@@ -59,9 +53,10 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
-// Update item quantity by ID
-router.put('/:userId/:itemId', async (req, res) => {
-  const { userId, itemId } = req.params;
+// Update item quantity by item ID (Protected)
+router.put('/:itemId', authenticateToken, async (req, res) => {
+  const userId = req.user.userId;
+  const { itemId } = req.params;
   const { quantity } = req.body;
 
   try {
@@ -82,9 +77,9 @@ router.put('/:userId/:itemId', async (req, res) => {
   }
 });
 
-// Update item quantity by product name
-router.put('/:userId/updateByName', async (req, res) => {
-  const { userId } = req.params;
+// Update item quantity by product name (Protected)
+router.put('/updateByName', authenticateToken, async (req, res) => {
+  const userId = req.user.userId;
   const { productName, quantity } = req.body;
 
   try {
@@ -105,17 +100,17 @@ router.put('/:userId/updateByName', async (req, res) => {
   }
 });
 
-// Clear cart (remove all items)
-router.delete('/:userId', async (req, res) => {
-  const { userId } = req.params;
-  
+// Clear Cart (Protected)
+router.delete('/', authenticateToken, async (req, res) => {
+  const userId = req.user.userId;
+
   try {
     await Carts.findOneAndUpdate(
       { userId },
       { $set: { items: [] } },
       { new: true }
     );
-    
+
     res.status(200).json({ message: 'Cart cleared successfully' });
   } catch (error) {
     console.error(error);
@@ -123,10 +118,11 @@ router.delete('/:userId', async (req, res) => {
   }
 });
 
-// Remove specific item from cart
-router.delete('/:userId/item/:itemName', async (req, res) => {
-  const { userId, itemName } = req.params;
-  
+// Remove specific item by name (Protected)
+router.delete('/item/:itemName', authenticateToken, async (req, res) => {
+  const userId = req.user.userId;
+  const { itemName } = req.params;
+
   try {
     const updatedCart = await Carts.findOneAndUpdate(
       { userId },

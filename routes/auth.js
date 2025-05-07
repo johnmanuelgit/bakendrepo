@@ -3,10 +3,11 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const authenticateToken = require('../middleware/auth');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Register
+// Register (public)
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -26,7 +27,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Login
+// Login (public)
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -45,16 +46,19 @@ router.post('/login', async (req, res) => {
   });
 });
 
-// Profile
-router.get('/profile/:id', async (req, res) => {
+// Protected route (requires JWT)
+router.get('/profile/:id', authenticateToken, async (req, res) => {
+  if (req.user.userId !== req.params.id) {
+    return res.status(403).json({ error: 'Unauthorized access' });
+  }
+
   try {
     const user = await User.findById(req.params.id).select('-password');
     res.json(user);
   } catch (err) {
-    res.status(500).json({ message: 'error fetching user' });
+    res.status(500).json({ message: 'Error fetching user' });
   }
 });
-
 
 
 
