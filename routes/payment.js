@@ -1,15 +1,14 @@
 const Razorpay = require("razorpay");
 const express = require("express");
 const router = express.Router();
-const authenticateToken = require("../middleware/auth"); // Add this line
 
 const instance = new Razorpay({
   key_id: 'rzp_test_QIN4sfPHDDt9hq',
   key_secret: 'GbpVMOkKsleNkBRwRTqQe53s'
 });
 
-// Create order (Protected route)
-router.post('/create-order', authenticateToken, async (req, res) => {
+// Create order (No authentication)
+router.post('/create-order', async (req, res) => {
   const { amount, currency } = req.body;
 
   const options = {
