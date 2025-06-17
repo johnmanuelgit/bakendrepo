@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Cart = require('../models/Carts');
+const middleware =require('../middleware/auth');
 
 // Get cart by userId
-router.get('/:userId', async (req, res) => {
+router.get('/:userId', middleware, async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.params.userId });
     if (cart) {
@@ -17,7 +18,7 @@ router.get('/:userId', async (req, res) => {
 });
 
 // Add item to cart
-router.post('/', async (req, res) => {
+router.post('/',middleware,  async (req, res) => {
   try {
     const { userId, name, image, price, quantity } = req.body;
     
@@ -54,7 +55,7 @@ router.post('/', async (req, res) => {
 });
 
 // Update item quantity - NEW ENDPOINT
-router.put('/update', async (req, res) => {
+router.put('/update',middleware,  async (req, res) => {
   try {
     const { userId, productName, quantity } = req.body;
     
@@ -83,7 +84,7 @@ router.put('/update', async (req, res) => {
 });
 
 // Remove item from cart
-router.delete('/:userId/item/:itemName', async (req, res) => {
+router.delete('/:userId/item/:itemName',middleware,  async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.params.userId });
     
@@ -102,7 +103,7 @@ router.delete('/:userId/item/:itemName', async (req, res) => {
 });
 
 // Clear cart
-router.delete('/:userId', async (req, res) => {
+router.delete('/:userId',middleware,  async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.params.userId });
     
